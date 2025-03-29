@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Community Hub</title>
+    <style>
+        :root {
+            --primary-color: #FF0000;
+            --background: #0F0F0F;
+            --text-color: #FFFFFF;
+            --card-bg: #272727;
+            --spacing: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--background);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 1rem 2rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-button:hover {
+            transform: scale(1.05);
+        }
+
+        .content-section {
+            display: none;
+            padding: 2rem;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .channel-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .video-item {
+            position: relative;
+            padding-bottom: 56.25%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .video-item iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .admin-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .admin-form {
+            display: none;
+            position: fixed;
+            bottom: 7rem;
+            right: 2rem;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            width: 300px;
+        }
+
+        .admin-form.active {
+            display: block;
+        }
+
+        .admin-form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            background: #3d3d3d;
+            border: none;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .admin-form button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .admin-delete {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        body.admin-mode .admin-delete {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .nav-button {
+                width: 90%;
+            }
+
+            .content-section {
+                padding: 1rem;
+            }
+
+            .admin-form {
+                width: 90%;
+                right: 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <button class="nav-button active" data-section="channels">Click here for Channels</button>
+        <button class="nav-button" data-section="videos">Click here for Videos</button>
+    </nav>
+
+    <main>
+        <section id="channels" class="content-section active">
+            <div class="channels-grid"></div>
+        </section>
+
+        <section id="videos" class="content-section">
+            <div class="videos-grid"></div>
+        </section>
+    </main>
+
+    <button class="admin-btn">@</button>
+    <div class="admin-form">
+        <input type="text" id="channelName" placeholder="Channel Name">
+        <input type="text" id="channelUrl" placeholder="Channel URL">
+        <button onclick="addChannel()">Add Channel</button>
+        <hr style="margin: 1.5rem 0;">
+        <input type="text" id="videoUrl" placeholder="Video URL">
+        <button onclick="addVideo()">Add Video</button>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = "@Amroamo7370";
+        let contentData = JSON.parse(localStorage.getItem('ytContent')) || { channels: [], videos: [] };
+
+        // Navigation
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(button.dataset.section).classList.add('active');
+            });
+        });
+
+        // Admin Controls
+        document.querySelector('.admin-btn').addEventListener('click', () => {
+            const password = prompt("Enter admin password:");
+            if(password === ADMIN_PASSWORD) {
+                document.body.classList.add('admin-mode');
+                document.querySelector('.admin-form').classList.add('active');
+            } else if(password) {
+                alert("Incorrect password!");
+            }
+        });
+
+        // Close admin form when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.admin-form') && !e.target.closest('.admin-btn')) {
+                document.body.classList.remove('admin-mode');
+                document.querySelector('.admin-form').classList.remove('active');
+            }
+        });
+
+        // Content Management
+        function addChannel() {
+            const name = document.getElementById('channelName').value;
+            const url = document.getElementById('channelUrl').value;
+            if(!name || !url) return alert("Please fill all fields");
+
+            contentData.channels.push({
+                id: Date.now(),
+                name: name,
+                url: url
+            });
+            saveAndRender();
+            document.getElementById('channelName').value = '';
+            document.getElementById('channelUrl').value = '';
+        }
+
+        function addVideo() {
+            const url = document.getElementById('videoUrl').value;
+            const videoId = extractVideoId(url);
+            if(!videoId) return alert("Invalid YouTube URL");
+
+            contentData.videos.push({
+                id: videoId,
+                url: url
+            });
+            saveAndRender();
+            document.getElementById('videoUrl').value = '';
+        }
+
+        function deleteChannel(id) {
+            if (!confirm("Are you sure you want to delete this channel?")) return;
+            contentData.channels = contentData.channels.filter(c => c.id !== id);
+            saveAndRender();
+        }
+
+        function deleteVideo(id) {
+            if (!confirm("Are you sure you want to delete this video?")) return;
+            contentData.videos = contentData.videos.filter(v => v.id !== id);
+            saveAndRender();
+        }
+
+        // Helpers
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('ytContent', JSON.stringify(contentData));
+            renderContent();
+        }
+
+        function renderContent() {
+            // Render Channels
+            document.querySelector('.channels-grid').innerHTML = contentData.channels
+                .map(channel => `
+                    <div class="channel-card">
+                        <h3>${channel.name}</h3>
+                        <a href="${channel.url}" target="_blank" style="color: var(--primary-color); margin-top: 1rem; display: block;">
+                            Visit Channel
+                        </a>
+                        <button onclick="deleteChannel(${channel.id})" class="admin-delete">×</button>
+                    </div>
+                `).join('');
+
+            // Render Videos
+            document.querySelector('.videos-grid').innerHTML = contentData.videos
+                .map(video => `
+                    <div class="video-item">
+                        <iframe src="https://www.youtube.com/embed/${video.id}" 
+                                allowfullscreen></iframe>
+                        <button onclick="deleteVideo('${video.id}')" class="admin-delete">×</button>
+                    </div>
+                `).join('');
+        }
+
+        // Initial Render
+        renderContent();
+    </script>
+</body>
+</html>
