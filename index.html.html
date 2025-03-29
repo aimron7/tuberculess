@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tuber Cules</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+
+    /* Navigation Bar */
+    nav {
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    nav h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    nav button {
+      background-color: #555;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+
+    nav button:hover {
+      background-color: #777;
+    }
+
+    /* Main Content */
+    .container {
+      padding: 20px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* Channel and Video List */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .list-item {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .list-item img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+    }
+
+    .list-item h2 {
+      margin: 0;
+      font-size: 16px;
+      flex: 1;
+    }
+
+    .list-item button {
+      background-color: #ff0000;
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .list-item button:hover {
+      background-color: #cc0000;
+    }
+
+    .admin-delete {
+      background-color: #333;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+
+    .admin-delete:hover {
+      background-color: #555;
+    }
+
+    /* Admin Post Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      width: 90%;
+      max-width: 300px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      background-color: #ff0000;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .modal-content button:hover {
+      background-color: #cc0000;
+    }
+
+    /* Responsive Design for Mobile Phones */
+    @media (max-width: 768px) {
+      .list-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 8px; /* Reduced padding */
+        gap: 8px; /* Reduced gap */
+      }
+
+      .list-item img {
+        width: 50px; /* Smaller image */
+        height: 50px; /* Smaller image */
+        margin-bottom: 5px; /* Reduced margin */
+      }
+
+      .list-item h2 {
+        font-size: 14px; /* Smaller font size */
+      }
+
+      .list-item button {
+        width: 100%;
+        margin: 5px 0;
+        padding: 6px 12px; /* Smaller button padding */
+        font-size: 12px; /* Smaller button font size */
+      }
+
+      nav {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px; /* Reduced padding */
+      }
+
+      nav h1 {
+        margin-bottom: 5px; /* Reduced margin */
+        font-size: 20px; /* Smaller font size */
+      }
+
+      nav button {
+        width: 100%;
+        margin: 3px 0; /* Reduced margin */
+        padding: 8px 16px; /* Smaller button padding */
+        font-size: 14px; /* Smaller button font size */
+      }
+
+      .container {
+        padding: 10px; /* Reduced padding */
+      }
+
+      .section h2 {
+        font-size: 18px; /* Smaller heading font size */
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <h1>Tuber Cules</h1>
+    <div>
+      <button onclick="showSection('channels')">Channels</button>
+      <button onclick="showSection('videos')">Videos</button>
+      <button onclick="openAdminModal()">Admin Post</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Channels Section -->
+    <div id="channels" class="section active">
+      <h2>Channels (Total: <span id="channelCount"></span>)</h2>
+      <div class="list" id="channelList"></div>
+    </div>
+
+    <!-- Videos Section -->
+    <div id="videos" class="section">
+      <h2>Videos (Total: <span id="videoCount"></span>)</h2>
+      <div class="list" id="videoList"></div>
+    </div>
+  </div>
+
+  <!-- Admin Post Modal -->
+  <div id="adminModal" class="modal">
+    <div class="modal-content">
+      <h2>Admin Post</h2>
+      <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+      <button onclick="verifyAdmin()">Submit</button>
+      <button onclick="closeAdminModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- Post Form Modal -->
+  <div id="postModal" class="modal">
+    <div class="modal-content">
+      <h2>Post New Content</h2>
+      <select id="contentType">
+        <option value="channel">Channel</option>
+        <option value="video">Video</option>
+      </select>
+      <input type="text" id="contentUrl" placeholder="Enter Channel or Video URL">
+      <button onclick="postContent()">Post</button>
+      <button onclick="closePostModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // YouTube API Key
+    const API_KEY = "AIzaSyBkkMjMjjK5DDR9riOlwiXGfVU7SPzDbTI";
+
+    // Data Storage (Using localStorage)
+    let channels = JSON.parse(localStorage.getItem("channels")) || [];
+    let videos = JSON.parse(localStorage.getItem("videos")) || [];
+
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem("channels", JSON.stringify(channels));
+      localStorage.setItem("videos", JSON.stringify(videos));
+    }
+
+    // Extract Channel ID from URL
+    function extractChannelId(url) {
+      if (url.includes("/c/")) {
+        return url.split("/c/")[1].split("/")[0];
+      } else if (url.includes("/channel/")) {
+        return url.split("/channel/")[1].split("/")[0];
+      } else if (url.includes("/user/")) {
+        return url.split("/user/")[1].split("/")[0];
+      }
+      return null;
+    }
+
+    // Extract Video ID from URL
+    function extractVideoId(url) {
+      if (url.includes("v=")) {
+        return url.split("v=")[1].split("&")[0];
+      }
+      return null;
+    }
+
+    // Fetch Channel Details from YouTube API
+    async function fetchChannelDetails(channelId) {
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=${API_KEY}`
+      );
+      const data = await response.json();
+      return data.items[0].snippet;
+    }
+
+    // Fetch Video Details from YouTube API
+    async function fetchVideoDetails(videoId) {
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${API_KEY}`
+      );
+      const data = await response.json();
+      return data.items[0].snippet;
+    }
+
+    // Display Channels
+    const channelList = document.getElementById("channelList");
+    const channelCount = document.getElementById("channelCount");
+
+    function renderChannels() {
+      channelList.innerHTML = "";
+      channels.forEach((channel, index) => {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = `
+          <img src="${channel.thumbnail}" alt="${channel.name}">
+          <h2>${channel.name}</h2>
+          <button onclick="window.open('https://www.youtube.com/channel/${channel.id}', '_blank')">View Channel</button>
+          <button class="admin-delete" onclick="deleteChannel(${index})">Delete</button>
+        `;
+        channelList.appendChild(item);
+      });
+      channelCount.textContent = channels.length;
+    }
+
+    // Display Videos
+    const videoList = document.getElementById("videoList");
+    const videoCount = document.getElementById("videoCount");
+
+    function renderVideos() {
+      videoList.innerHTML = "";
+      videos.forEach((video, index) => {
+        const item = document.createElement("div");
+        item.className = "list-item";
+        item.innerHTML = `
+          <img src="${video.thumbnail}" alt="${video.title}">
+          <h2>${video.title}</h2>
+          <button onclick="window.open('https://www.youtube.com/watch?v=${video.id}', '_blank')">Watch Video</button>
+          <button class="admin-delete" onclick="deleteVideo(${index})">Delete</button>
+        `;
+        videoList.appendChild(item);
+      });
+      videoCount.textContent = videos.length;
+    }
+
+    // Admin-Only Delete Functions
+    function deleteChannel(index) {
+      const password = prompt("Enter admin password to delete:");
+      if (password === "admin123") { // Replace with a secure password in production
+        channels.splice(index, 1);
+        saveData();
+        renderChannels();
+      } else {
+        alert("Unauthorized!");
+      }
+    }
+
+    function deleteVideo(index) {
+      const password = prompt("Enter admin password to delete:");
+      if (password === "admin123") { // Replace with a secure password in production
+        videos.splice(index, 1);
+        saveData();
+        renderVideos();
+      } else {
+        alert("Unauthorized!");
+      }
+    }
+
+    // Navigation Functionality
+    function showSection(sectionId) {
+      document.querySelectorAll(".section").forEach(section => {
+        section.classList.remove("active");
+      });
+      document.getElementById(sectionId).classList.add("active");
+    }
+
+    // Admin Modal Functions
+    function openAdminModal() {
+      document.getElementById("adminModal").style.display = "flex";
+    }
+
+    function closeAdminModal() {
+      document.getElementById("adminModal").style.display = "none";
+    }
+
+    function verifyAdmin() {
+      const password = document.getElementById("adminPassword").value;
+      if (password === "admin123") { // Replace with a secure password in production
+        closeAdminModal();
+        openPostModal();
+      } else {
+        alert("Incorrect password!");
+      }
+    }
+
+    // Post Modal Functions
+    function openPostModal() {
+      document.getElementById("postModal").style.display = "flex";
+    }
+
+    function closePostModal() {
+      document.getElementById("postModal").style.display = "none";
+    }
+
+    async function postContent() {
+      const type = document.getElementById("contentType").value;
+      const url = document.getElementById("contentUrl").value;
+
+      if (type === "channel") {
+        const channelId = extractChannelId(url);
+        if (!channelId) {
+          alert("Invalid Channel URL!");
+          return;
+        }
+        const details = await fetchChannelDetails(channelId);
+        channels.push({
+          id: channelId,
+          name: details.title,
+          thumbnail: details.thumbnails.default.url
+        });
+      } else if (type === "video") {
+        const videoId = extractVideoId(url);
+        if (!videoId) {
+          alert("Invalid Video URL!");
+          return;
+        }
+        const details = await fetchVideoDetails(videoId);
+        videos.push({
+          id: videoId,
+          title: details.title,
+          thumbnail: details.thumbnails.medium.url
+        });
+      }
+
+      saveData();
+      renderChannels();
+      renderVideos();
+      closePostModal();
+    }
+
+    // Initial Render
+    renderChannels();
+    renderVideos();
+  </script>
+</body>
+</html>
